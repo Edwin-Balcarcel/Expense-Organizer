@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcards</title>
+    <title>TOEFL Flashcards</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -35,17 +35,32 @@
         }
         .intro {
             background: rgba(0, 170, 255, 0.9);
-            padding: 16px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             border: 1px solid #00ffff;
             text-shadow: 0 0 5px #00d4ff;
             animation: pulse 2s infinite;
+            position: relative;
         }
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
+        }
+        .intro button {
+            padding: 8px 16px;
+            margin-left: 10px;
+            background-color: #00aaff;
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .intro button:hover {
+            transform: scale(1.05);
+            background-color: #0088cc;
         }
         h1 {
             font-size: 32px;
@@ -102,7 +117,7 @@
             margin: 8px;
             border: none;
             border-radius: 8px;
-            background-color: #00aaff; /* Celeste original */
+            background-color: #00aaff;
             color: white;
             font-size: 16px;
             cursor: pointer;
@@ -111,11 +126,11 @@
         }
         button:hover {
             transform: scale(1.05);
-            background-color: #0088cc; /* Oscurece al hover */
+            background-color: #0088cc;
         }
         .reset-button {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             background: #ff4040;
             padding: 10px 20px;
@@ -160,7 +175,7 @@
                 font-size: 14px;
             }
             .reset-button {
-                top: 15px;
+                bottom: 15px;
                 right: 15px;
                 padding: 8px 16px;
             }
@@ -172,15 +187,16 @@
 </head>
 <body>
     <div class="container">
-        <div class="intro">
-            <p><strong>⚡ BETA ALERT ⚡</strong> - Esta es la versión beta de Flashcards. Usamos el <strong>International Phonetic Alphabet (IPA)</strong> para una pronunciación precisa. ¡Estamos trabajando en audio y expandiendo el diccionario a medida que progresas! Prepárate para aprender!</p>
+        <div class="intro" id="intro-alert">
+            <p><strong>⚡ BETA ALERT ⚡</strong> - Esta es la versión beta de TOEFL Flashcards. Usamos el <strong>International Phonetic Alphabet (IPA)</strong> para una pronunciación precisa. ¡Estamos trabajando en audio y expandiendo el diccionario a medida que progresas! Prepárate para el futuro. 🚀</p>
+            <button onclick="hideIntro()">Entendido</button>
         </div>
-        <h1>Flashcards</h1>
+        <h1>TOEFL Flashcards</h1>
         <div class="progress">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         <p id="progress-text">Palabras aprendidas: 0/170</p>
-        <button class="reset-button" onclick="resetApp()">Reset</button>
+        <button class="reset-button" onclick="resetApp()">Reset App</button>
         <div id="flashcard" class="flashcard">
             <p><strong>Word:</strong> <span id="word"></span> (<span id="ipa"></span>)</p>
             <p><strong>Definition:</strong> <span id="definition"></span></p>
@@ -383,6 +399,7 @@
             document.getElementById('example').textContent = word.example;
             document.getElementById('notes').value = wordNotes[word.word] || '';
             updateProgress();
+            updateLearnedList();
         }
 
         // Marcar como aprendida
@@ -394,6 +411,7 @@
                 wordNotes[word] = document.getElementById('notes').value;
                 localStorage.setItem('wordNotes', JSON.stringify(wordNotes));
                 updateProgress();
+                updateLearnedList();
             }
             nextWord();
         }
@@ -419,10 +437,19 @@
             progressBar.style.width = `${(learnedCount / 170) * 100}%`;
         }
 
+        // Actualizar lista de palabras aprendidas
+        function updateLearnedList() {
+            const list = document.getElementById('learned-list');
+            list.innerHTML = learnedWords.length ? learnedWords.map(w => `<p>${w}</p>`).join('') : '<p>No words learned yet.</p>';
+        }
+
         // Mostrar/Ocultar lista de palabras aprendidas
         function toggleLearnedList() {
             const list = document.getElementById('learned-list');
             list.classList.toggle('hidden');
+            if (!list.classList.contains('hidden') && learnedWords.length === 0) {
+                list.innerHTML = '<p>No words learned yet.</p>';
+            }
         }
 
         // Iniciar cuestionario
@@ -485,9 +512,18 @@
             localStorage.setItem('wordNotes', JSON.stringify(wordNotes));
         });
 
+        // Ocultar la alerta introductoria
+        function hideIntro() {
+            const intro = document.getElementById('intro-alert');
+            intro.classList.add('hidden');
+        }
+
+        // Ocultar la alerta después de 10 segundos
+        setTimeout(hideIntro, 10000);
+
         // Inicializar
         showFlashcard();
-        updateProgress();
+        updateLearnedList();
         updateQuizResults();
     </script>
 </body>
