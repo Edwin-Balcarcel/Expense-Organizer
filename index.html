@@ -72,11 +72,6 @@
         .hidden {
             display: none;
         }
-        audio {
-            margin-top: 10px;
-            width: 100%;
-            max-width: 300px;
-        }
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
@@ -92,14 +87,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="section">
         <h1>TOEFL Flashcards</h1>
         <div id="flashcard" class="flashcard">
             <p><strong>Word:</strong> <span id="word"></span> (<span id="ipa"></span>)</p>
-            <audio id="pronunciation" controls>
-                <source id="audio-source" src="https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
             <p><strong>Definition:</strong> <span id="definition"></span></p>
             <p><strong>Example:</strong> <span id="example"></span></p>
             <button onclick="showAnswer()">Show Answer</button>
@@ -113,6 +104,7 @@
         <div class="section">
             <h2>Evaluación de Aprendizaje</h2>
             <button onclick="startQuiz()">Start Quiz</button>
+            <button onclick="resetApp()">Reset App</button>
             <div id="quiz" class="hidden">
                 <p><strong>Question:</strong> What is the meaning of "<span id="quiz-word"></span>"?</p>
                 <input type="text" id="quiz-answer" placeholder="Type your answer">
@@ -124,81 +116,165 @@
     </div>
 
     <script>
-        // Lista de palabras TOEFL (70 total: 20 fáciles, 20 intermedias, 30 avanzadas)
+        // Lista de palabras TOEFL (170 total: 70 originales + 100 nuevas)
         const words = [
-            // Fáciles (20)
-            { word: "benefit", ipa: "/ˈbenɪfɪt/", definition: "An advantage or gain", example: "Learning English has many benefits for my career.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "challenge", ipa: "/ˈtʃælɪndʒ/", definition: "A difficult task", example: "Coding a new app is a fun challenge.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "improve", ipa: "/ɪmˈpruːv/", definition: "To make better", example: "I want to improve my pronunciation.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "affect", ipa: "/əˈfekt/", definition: "To influence", example: "Music affects my mood positively.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "resource", ipa: "/ˈriːsɔːrs/", definition: "A supply or support", example: "Online tutorials are great resources for coding.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "develop", ipa: "/dɪˈveləp/", definition: "To grow or create", example: "They developed a new music app.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "focus", ipa: "/ˈfoʊkəs/", definition: "To concentrate", example: "I focus on learning new words daily.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "method", ipa: "/ˈmeθəd/", definition: "A way of doing something", example: "His method for mixing music is unique.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "require", ipa: "/rɪˈkwaɪr/", definition: "To need", example: "The TOEFL requires good vocabulary.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "support", ipa: "/səˈpɔːrt/", definition: "To help or sustain", example: "My tutor supports my English learning.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "access", ipa: "/ˈækses/", definition: "The ability to use something", example: "I have access to great coding tools.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "create", ipa: "/kriˈeɪt/", definition: "To make something new", example: "Artists create amazing music.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "factor", ipa: "/ˈfæktər/", definition: "Something that influences", example: "Talent is a factor in music success.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "increase", ipa: "/ɪnˈkriːs/", definition: "To make larger", example: "I want to increase my vocabulary.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "process", ipa: "/ˈprɑːses/", definition: "A series of actions", example: "Learning English is a long process.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "respond", ipa: "/rɪˈspɑːnd/", definition: "To answer", example: "She responded to the question confidently.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "source", ipa: "/sɔːrs/", definition: "The origin of something", example: "The internet is a source of knowledge.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "structure", ipa: "/ˈstrʌktʃər/", definition: "The way something is organized", example: "The song has a clear structure.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "technology", ipa: "/tekˈnɑːlədʒi/", definition: "The use of science in tools", example: "Technology changes music production.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "value", ipa: "/ˈvæljuː/", definition: "The importance of something", example: "I value good music.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            // Intermedias (20)
-            { word: "analyze", ipa: "/ˈænəˌlaɪz/", definition: "To examine in detail", example: "We need to analyze the data before deciding.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "significant", ipa: "/sɪɡˈnɪfɪkənt/", definition: "Important or meaningful", example: "The discovery had a significant impact on science.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "evaluate", ipa: "/ɪˈvæljuˌeɪt/", definition: "To assess or judge", example: "Teachers evaluate students' progress regularly.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "contribute", ipa: "/kənˈtrɪbjut/", definition: "To give or add to something", example: "She contributed ideas to the project.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "perspective", ipa: "/pərˈspɛktɪv/", definition: "A point of view", example: "His perspective on music is unique.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "implement", ipa: "/ˈɪmpləˌmɛnt/", definition: "To put into action", example: "We implemented a new software system.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "impact", ipa: "/ˈɪmpækt/", definition: "A strong effect", example: "Technology has a great impact on society.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "approach", ipa: "/əˈproʊtʃ/", definition: "A way of dealing with something", example: "Her approach to coding is creative.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "sustainability", ipa: "/səˌsteɪnəˈbɪlɪti/", definition: "Ability to maintain or preserve", example: "Sustainability is key for the environment.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "innovation", ipa: "/ˌɪnəˈveɪʃən/", definition: "A new idea or method", example: "AI is driving innovation in music.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "assess", ipa: "/əˈsɛs/", definition: "To evaluate or estimate", example: "We need to assess the project's risks.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "diverse", ipa: "/daɪˈvɜrs/", definition: "Varied or different", example: "The team has diverse skills.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "establish", ipa: "/ɪˈstæblɪʃ/", definition: "To set up or create", example: "They established a new company.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "priority", ipa: "/praɪˈɔrɪti/", definition: "Something given special attention", example: "Learning English is my priority.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "context", ipa: "/ˈkɒntɛkst/", definition: "The situation or background", example: "Context is important in understanding lyrics.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "relevant", ipa: "/ˈrɛləvənt/", definition: "Closely connected or appropriate", example: "Her comments were relevant to the discussion.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "hypothesis", ipa: "/haɪˈpɒθəsɪs/", definition: "A proposed explanation", example: "The hypothesis was tested in the lab.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "integrate", ipa: "/ˈɪntɪˌɡreɪt/", definition: "To combine or incorporate", example: "We integrated new features into the app.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "constraint", ipa: "/kənˈstreɪnt/", definition: "A limitation or restriction", example: "Budget constraints limited our options.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "evidence", ipa: "/ˈevɪdəns/", definition: "Proof or indication", example: "There is evidence that music boosts creativity.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            // Avanzadas (30)
-            { word: "ameliorate", ipa: "/əˈmiːliəˌreɪt/", definition: "To make better or improve", example: "New software can ameliorate user experience.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "ubiquitous", ipa: "/juˈbɪkwɪtəs/", definition: "Present everywhere", example: "Smartphones are ubiquitous in modern society.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "disparity", ipa: "/dɪˈspærɪti/", definition: "A great difference", example: "There’s a disparity in access to technology.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "profound", ipa: "/prəˈfaʊnd/", definition: "Deep or insightful", example: "The lyrics had a profound impact on me.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "cohesive", ipa: "/koʊˈhiːsɪv/", definition: "Unified or connected", example: "The album feels cohesive from start to finish.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "mitigate", ipa: "/ˈmɪtɪˌɡeɪt/", definition: "To reduce or lessen", example: "We need to mitigate errors in the code.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "paradigm", ipa: "/ˈpærəˌdaɪm/", definition: "A model or framework", example: "AI represents a new paradigm in technology.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "ambiguous", ipa: "/æmˈbɪɡjuəs/", definition: "Unclear or having multiple meanings", example: "The song’s lyrics were ambiguous.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "articulate", ipa: "/ɑːrˈtɪkjəˌleɪt/", definition: "To express clearly", example: "She articulated her ideas about music.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "concur", ipa: "/kənˈkɜːr/", definition: "To agree", example: "I concur with your view on tech innovation.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "discrepancy", ipa: "/dɪˈskrepənsi/", definition: "A difference or inconsistency", example: "There was a discrepancy in the data output.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "empirical", ipa: "/ɛmˈpɪrɪkəl/", definition: "Based on observation or experience", example: "Empirical evidence supports the theory.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "incentive", ipa: "/ɪnˈsentɪv/", definition: "A reason to do something", example: "Learning English is an incentive for my career.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "intricate", ipa: "/ˈɪntrɪkət/", definition: "Complex or detailed", example: "The song’s production is intricate.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "pervasive", ipa: "/pərˈveɪsɪv/", definition: "Spreading widely", example: "Social media is pervasive in music culture.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "plausible", ipa: "/ˈplɔːzəbəl/", definition: "Seemingly reasonable", example: "His explanation for the bug was plausible.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "pragmatic", ipa: "/præɡˈmætɪk/", definition: "Practical and realistic", example: "Her pragmatic approach solved the issue.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "prevalent", ipa: "/ˈprevələnt/", definition: "Widespread or common", example: "Streaming is prevalent in music today.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "redundant", ipa: "/rɪˈdʌndənt/", definition: "No longer needed or repetitive", example: "The code had redundant lines.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "substantial", ipa: "/səbˈstænʃəl/", definition: "Large or significant", example: "The app received substantial funding.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "synthesis", ipa: "/ˈsɪnθəsɪs/", definition: "Combining parts into a whole", example: "The song is a synthesis of genres.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "transient", ipa: "/ˈtrænziənt/", definition: "Temporary or passing", example: "Trends in music are often transient.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "viable", ipa: "/ˈvaɪəbəl/", definition: "Capable of working successfully", example: "The startup has a viable business model.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "advocate", ipa: "/ˈædvəˌkeɪt/", definition: "To support or recommend", example: "He advocates for open-source software.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "coherent", ipa: "/koʊˈhɪrənt/", definition: "Logical and consistent", example: "Her essay was coherent and well-written.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "compelling", ipa: "/kəmˈpelɪŋ/", definition: "Captivating or convincing", example: "The music video was compelling.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "detrimental", ipa: "/ˌdetrɪˈmentəl/", definition: "Harmful or damaging", example: "Bugs can be detrimental to an app.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "exacerbate", ipa: "/ɪɡˈzæsərˌbeɪt/", definition: "To make worse", example: "Ignoring the issue will exacerbate it.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "facilitate", ipa: "/fəˈsɪlɪˌteɪt/", definition: "To make easier", example: "Apps facilitate music sharing.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" },
-            { word: "scrutinize", ipa: "/ˈskruːtəˌnaɪz/", definition: "To examine closely", example: "We scrutinized the code for errors.", audio: "https://www.freesound.org/data/previews/609/609197_11290760-lq.mp3" }
+            // Originales (70)
+            { word: "benefit", ipa: "/ˈbenɪfɪt/", definition: "An advantage or gain", example: "Learning English has many benefits for my career." },
+            { word: "challenge", ipa: "/ˈtʃælɪndʒ/", definition: "A difficult task", example: "Coding a new app is a fun challenge." },
+            { word: "improve", ipa: "/ɪmˈpruːv/", definition: "To make better", example: "I want to improve my pronunciation." },
+            { word: "affect", ipa: "/əˈfekt/", definition: "To influence", example: "Music affects my mood positively." },
+            { word: "resource", ipa: "/ˈriːsɔːrs/", definition: "A supply or support", example: "Online tutorials are great resources for coding." },
+            { word: "develop", ipa: "/dɪˈveləp/", definition: "To grow or create", example: "They developed a new music app." },
+            { word: "focus", ipa: "/ˈfoʊkəs/", definition: "To concentrate", example: "I focus on learning new words daily." },
+            { word: "method", ipa: "/ˈmeθəd/", definition: "A way of doing something", example: "His method for mixing music is unique." },
+            { word: "require", ipa: "/rɪˈkwaɪr/", definition: "To need", example: "The TOEFL requires good vocabulary." },
+            { word: "support", ipa: "/səˈpɔːrt/", definition: "To help or sustain", example: "My tutor supports my English learning." },
+            { word: "access", ipa: "/ˈækses/", definition: "The ability to use something", example: "I have access to great coding tools." },
+            { word: "create", ipa: "/kriˈeɪt/", definition: "To make something new", example: "Artists create amazing music." },
+            { word: "factor", ipa: "/ˈfæktər/", definition: "Something that influences", example: "Talent is a factor in music success." },
+            { word: "increase", ipa: "/ɪnˈkriːs/", definition: "To make larger", example: "I want to increase my vocabulary." },
+            { word: "process", ipa: "/ˈprɑːses/", definition: "A series of actions", example: "Learning English is a long process." },
+            { word: "respond", ipa: "/rɪˈspɑːnd/", definition: "To answer", example: "She responded to the question confidently." },
+            { word: "source", ipa: "/sɔːrs/", definition: "The origin of something", example: "The internet is a source of knowledge." },
+            { word: "structure", ipa: "/ˈstrʌktʃər/", definition: "The way something is organized", example: "The song has a clear structure." },
+            { word: "technology", ipa: "/tekˈnɑːlədʒi/", definition: "The use of science in tools", example: "Technology changes music production." },
+            { word: "value", ipa: "/ˈvæljuː/", definition: "The importance of something", example: "I value good music." },
+            { word: "analyze", ipa: "/ˈænəˌlaɪz/", definition: "To examine in detail", example: "We need to analyze the data before deciding." },
+            { word: "significant", ipa: "/sɪɡˈnɪfɪkənt/", definition: "Important or meaningful", example: "The discovery had a significant impact on science." },
+            { word: "evaluate", ipa: "/ɪˈvæljuˌeɪt/", definition: "To assess or judge", example: "Teachers evaluate students' progress regularly." },
+            { word: "contribute", ipa: "/kənˈtrɪbjut/", definition: "To give or add to something", example: "She contributed ideas to the project." },
+            { word: "perspective", ipa: "/pərˈspɛktɪv/", definition: "A point of view", example: "His perspective on music is unique." },
+            { word: "implement", ipa: "/ˈɪmpləˌmɛnt/", definition: "To put into action", example: "We implemented a new software system." },
+            { word: "impact", ipa: "/ˈɪmpækt/", definition: "A strong effect", example: "Technology has a great impact on society." },
+            { word: "approach", ipa: "/əˈproʊtʃ/", definition: "A way of dealing with something", example: "Her approach to coding is creative." },
+            { word: "sustainability", ipa: "/səˌsteɪnəˈbɪlɪti/", definition: "Ability to maintain or preserve", example: "Sustainability is key for the environment." },
+            { word: "innovation", ipa: "/ˌɪnəˈveɪʃən/", definition: "A new idea or method", example: "AI is driving innovation in music." },
+            { word: "assess", ipa: "/əˈsɛs/", definition: "To evaluate or estimate", example: "We need to assess the project's risks." },
+            { word: "diverse", ipa: "/daɪˈvɜrs/", definition: "Varied or different", example: "The team has diverse skills." },
+            { word: "establish", ipa: "/ɪˈstæblɪʃ/", definition: "To set up or create", example: "They established a new company." },
+            { word: "priority", ipa: "/praɪˈɔrɪti/", definition: "Something given special attention", example: "Learning English is my priority." },
+            { word: "context", ipa: "/ˈkɒntɛkst/", definition: "The situation or background", example: "Context is important in understanding lyrics." },
+            { word: "relevant", ipa: "/ˈrɛləvənt/", definition: "Closely connected or appropriate", example: "Her comments were relevant to the discussion." },
+            { word: "hypothesis", ipa: "/haɪˈpɒθəsɪs/", definition: "A proposed explanation", example: "The hypothesis was tested in the lab." },
+            { word: "integrate", ipa: "/ˈɪntɪˌɡreɪt/", definition: "To combine or incorporate", example: "We integrated new features into the app." },
+            { word: "constraint", ipa: "/kənˈstreɪnt/", definition: "A limitation or restriction", example: "Budget constraints limited our options." },
+            { word: "evidence", ipa: "/ˈevɪdəns/", definition: "Proof or indication", example: "There is evidence that music boosts creativity." },
+            { word: "ameliorate", ipa: "/əˈmiːliəˌreɪt/", definition: "To make better or improve", example: "New software can ameliorate user experience." },
+            { word: "ubiquitous", ipa: "/juˈbɪkwɪtəs/", definition: "Present everywhere", example: "Smartphones are ubiquitous in modern society." },
+            { word: "disparity", ipa: "/dɪˈspærɪti/", definition: "A great difference", example: "There’s a disparity in access to technology." },
+            { word: "profound", ipa: "/prəˈfaʊnd/", definition: "Deep or insightful", example: "The lyrics had a profound impact on me." },
+            { word: "cohesive", ipa: "/koʊˈhiːsɪv/", definition: "Unified or connected", example: "The album feels cohesive from start to finish." },
+            { word: "mitigate", ipa: "/ˈmɪtɪˌɡeɪt/", definition: "To reduce or lessen", example: "We need to mitigate errors in the code." },
+            { word: "paradigm", ipa: "/ˈpærəˌdaɪm/", definition: "A model or framework", example: "AI represents a new paradigm in technology." },
+            { word: "ambiguous", ipa: "/æmˈbɪɡjuəs/", definition: "Unclear or having multiple meanings", example: "The song’s lyrics were ambiguous." },
+            { word: "articulate", ipa: "/ɑːrˈtɪkjəˌleɪt/", definition: "To express clearly", example: "She articulated her ideas about music." },
+            { word: "concur", ipa: "/kənˈkɜːr/", definition: "To agree", example: "I concur with your view on tech innovation." },
+            { word: "discrepancy", ipa: "/dɪˈskrepənsi/", definition: "A difference or inconsistency", example: "There was a discrepancy in the data output." },
+            { word: "empirical", ipa: "/ɛmˈpɪrɪkəl/", definition: "Based on observation or experience", example: "Empirical evidence supports the theory." },
+            { word: "incentive", ipa: "/ɪnˈsentɪv/", definition: "A reason to do something", example: "Learning English is an incentive for my career." },
+            { word: "intricate", ipa: "/ˈɪntrɪkət/", definition: "Complex or detailed", example: "The song’s production is intricate." },
+            { word: "pervasive", ipa: "/pərˈveɪsɪv/", definition: "Spreading widely", example: "Social media is pervasive in music culture." },
+            { word: "plausible", ipa: "/ˈplɔːzəbəl/", definition: "Seemingly reasonable", example: "His explanation for the bug was plausible." },
+            { word: "pragmatic", ipa: "/præɡˈmætɪk/", definition: "Practical and realistic", example: "Her pragmatic approach solved the issue." },
+            { word: "prevalent", ipa: "/ˈprevələnt/", definition: "Widespread or common", example: "Streaming is prevalent in music today." },
+            { word: "redundant", ipa: "/rɪˈdʌndənt/", definition: "No longer needed or repetitive", example: "The code had redundant lines." },
+            { word: "substantial", ipa: "/səbˈstænʃəl/", definition: "Large or significant", example: "The app received substantial funding." },
+            { word: "synthesis", ipa: "/ˈsɪnθəsɪs/", definition: "Combining parts into a whole", example: "The song is a synthesis of genres." },
+            { word: "transient", ipa: "/ˈtrænziənt/", definition: "Temporary or passing", example: "Trends in music are often transient." },
+            { word: "viable", ipa: "/ˈvaɪəbəl/", definition: "Capable of working successfully", example: "The startup has a viable business model." },
+            { word: "advocate", ipa: "/ˈædvəˌkeɪt/", definition: "To support or recommend", example: "He advocates for open-source software." },
+            { word: "coherent", ipa: "/koʊˈhɪrənt/", definition: "Logical and consistent", example: "Her essay was coherent and well-written." },
+            { word: "compelling", ipa: "/kəmˈpelɪŋ/", definition: "Captivating or convincing", example: "The music video was compelling." },
+            { word: "detrimental", ipa: "/ˌdetrɪˈmentəl/", definition: "Harmful or damaging", example: "Bugs can be detrimental to an app." },
+            { word: "exacerbate", ipa: "/ɪɡˈzæsərˌbeɪt/", definition: "To make worse", example: "Ignoring the issue will exacerbate it." },
+            { word: "facilitate", ipa: "/fəˈsɪlɪˌteɪt/", definition: "To make easier", example: "Apps facilitate music sharing." },
+            { word: "scrutinize", ipa: "/ˈskruːtəˌnaɪz/", definition: "To examine closely", example: "We scrutinized the code for errors." },
+            // Nuevas (100)
+            { word: "hope", ipa: "/hoʊp/", definition: "A feeling of expectation", example: "I hope to pass the TOEFL exam." },
+            { word: "effort", ipa: "/ˈɛfərt/", definition: "Hard work or attempt", example: "She put a lot of effort into her studies." },
+            { word: "success", ipa: "/səkˈsɛs/", definition: "Achieving a goal", example: "His success came from hard work." },
+            { word: "problem", ipa: "/ˈprɑːbləm/", definition: "A difficult situation", example: "We need to solve this problem quickly." },
+            { word: "idea", ipa: "/aɪˈdiːə/", definition: "A thought or plan", example: "She had a great idea for the project." },
+            { word: "time", ipa: "/taɪm/", definition: "A measure of moments", example: "I don’t have much time today." },
+            { word: "work", ipa: "/wɜːrk/", definition: "Activity to achieve something", example: "He goes to work every morning." },
+            { word: "friend", ipa: "/frɛnd/", definition: "A person you like", example: "My friend helped me with my homework." },
+            { word: "family", ipa: "/ˈfæmɪli/", definition: "A group of relatives", example: "My family lives in another city." },
+            { word: "help", ipa: "/hɛlp/", definition: "To assist someone", example: "Can you help me with this task?" },
+            { word: "study", ipa: "/ˈstʌdi/", definition: "To learn or prepare", example: "I study English every day." },
+            { word: "plan", ipa: "/plæn/", definition: "A detailed proposal", example: "We need a plan for the weekend." },
+            { word: "goal", ipa: "/ɡoʊl/", definition: "An aim or target", example: "My goal is to learn 10 words daily." },
+            { word: "change", ipa: "/tʃeɪndʒ/", definition: "To make different", example: "The weather can change quickly." },
+            { word: "group", ipa: "/ɡruːp/", definition: "A number of people", example: "We work in a small group." },
+            { word: "skill", ipa: "/skɪl/", definition: "An ability to do something", example: "Cooking is a useful skill." },
+            { word: "team", ipa: "/tiːm/", definition: "A group working together", example: "Our team won the game." },
+            { word: "money", ipa: "/ˈmʌni/", definition: "Currency or cash", example: "I need money to buy a book." },
+            { word: "job", ipa: "/dʒɒb/", definition: "A paid position", example: "She has a new job in marketing." },
+            { word: "life", ipa: "/laɪf/", definition: "The period of existence", example: "Travel makes life exciting." },
+            { word: "day", ipa: "/deɪ/", definition: "A period of 24 hours", example: "I work hard every day." },
+            { word: "night", ipa: "/naɪt/", definition: "The time after sunset", example: "I study at night sometimes." },
+            { word: "home", ipa: "/hoʊm/", definition: "A place of residence", example: "I feel safe at home." },
+            { word: "school", ipa: "/skuːl/", definition: "A place for education", example: "I go to school every morning." },
+            { word: "book", ipa: "/bʊk/", definition: "A written work", example: "I read a book last night." },
+            { word: "food", ipa: "/fuːd/", definition: "Something to eat", example: "I like healthy food." },
+            { word: "water", ipa: "/ˈwɔːtər/", definition: "A liquid for drinking", example: "We need clean water daily." },
+            { word: "city", ipa: "/ˈsɪti/", definition: "A large town", example: "I live in a busy city." },
+            { word: "country", ipa: "/ˈkʌntri/", definition: "A nation or rural area", example: "She moved to the country." },
+            { word: "road", ipa: "/roʊd/", definition: "A path for travel", example: "The road was full of cars." },
+            { word: "car", ipa: "/kɑːr/", definition: "A vehicle", example: "He drives a red car." },
+            { word: "house", ipa: "/haʊs/", definition: "A building to live in", example: "We bought a new house." },
+            { word: "room", ipa: "/ruːm/", definition: "A part of a building", example: "My room is very tidy." },
+            { word: "door", ipa: "/dɔːr/", definition: "An entrance", example: "Please close the door." },
+            { word: "window", ipa: "/ˈwɪndoʊ/", definition: "An opening in a wall", example: "I opened the window." },
+            { word: "table", ipa: "/ˈteɪbəl/", definition: "A piece of furniture", example: "We eat at the table." },
+            { word: "chair", ipa: "/tʃɛər/", definition: "A seat", example: "Sit on the chair." },
+            { word: "bed", ipa: "/bɛd/", definition: "A place to sleep", example: "I sleep in my bed." },
+            { word: "light", ipa: "/laɪt/", definition: "Brightness or a lamp", example: "Turn on the light." },
+            { word: "phone", ipa: "/foʊn/", definition: "A communication device", example: "I use my phone daily." },
+            { word: "computer", ipa: "/kəmˈpjuːtər/", definition: "An electronic device", example: "I work on my computer." },
+            { word: "game", ipa: "/ɡeɪm/", definition: "An activity for fun", example: "We play a game together." },
+            { word: "sport", ipa: "/spɔːrt/", definition: "A physical activity", example: "Soccer is my favorite sport." },
+            { word: "music", ipa: "/ˈmjuːzɪk/", definition: "Sounds for enjoyment", example: "I listen to music every day." },
+            { word: "art", ipa: "/ɑːrt/", definition: "Creative expression", example: "She studies art at school." },
+            { word: "film", ipa: "/fɪlm/", definition: "A motion picture", example: "We watched a great film." },
+            { word: "news", ipa: "/njuːz/", definition: "Current events", example: "I read the news online." },
+            { word: "story", ipa: "/ˈstɔːri/", definition: "A tale or narrative", example: "He told a funny story." },
+            { word: "lesson", ipa: "/ˈlɛsən/", definition: "A period of learning", example: "The lesson was very useful." },
+            { word: "test", ipa: "/tɛst/", definition: "An examination", example: "I have a test tomorrow." },
+            { word: "grade", ipa: "/ɡreɪd/", definition: "A score or level", example: "She got a good grade." },
+            { word: "class", ipa: "/klæs/", definition: "A group of students", example: "My class is very friendly." },
+            { word: "teacher", ipa: "/ˈtiːtʃər/", definition: "A person who teaches", example: "My teacher is very kind." },
+            { word: "student", ipa: "/ˈstuːdnt/", definition: "A learner", example: "The student asked a question." },
+            { word: "parent", ipa: "/ˈpɛərənt/", definition: "A mother or father", example: "My parents support me." },
+            { word: "child", ipa: "/tʃaɪld/", definition: "A young person", example: "The child loves to play." },
+            { word: "love", ipa: "/lʌv/", definition: "A strong affection", example: "I love my family." },
+            { word: "hate", ipa: "/heɪt/", definition: "To dislike strongly", example: "I hate waking up early." },
+            { word: "happy", ipa: "/ˈhæpi/", definition: "Feeling joy", example: "She was happy to see me." },
+            { word: "sad", ipa: "/sæd/", definition: "Feeling sorrow", example: "He felt sad after the news." },
+            { word: "angry", ipa: "/ˈæŋɡri/", definition: "Feeling mad", example: "She was angry about the delay." },
+            { word: "excited", ipa: "/ɪkˈsaɪtɪd/", definition: "Feeling eager", example: "I’m excited for the trip." },
+            { word: "tired", ipa: "/ˈtaɪərd/", definition: "Feeling sleepy", example: "I’m tired after work." },
+            { word: "strong", ipa: "/strɒŋ/", definition: "Having power", example: "He is strong and healthy." },
+            { word: "weak", ipa: "/wiːk/", definition: "Lacking strength", example: "She felt weak after the illness." },
+            { word: "big", ipa: "/bɪɡ/", definition: "Large in size", example: "The house is very big." },
+            { word: "small", ipa: "/smɔːl/", definition: "Little in size", example: "I need a small bag." },
+            { word: "fast", ipa: "/fæst/", definition: "Quick in speed", example: "The car is very fast." },
+            { word: "slow", ipa: "/sloʊ/", definition: "Not quick", example: "The turtle moves slow." },
+            { word: "new", ipa: "/njuː/", definition: "Recently made", example: "I bought a new phone." },
+            { word: "old", ipa: "/oʊld/", definition: "Not new", example: "This book is very old." },
+            { word: "good", ipa: "/ɡʊd/", definition: "Of high quality", example: "This food is good." },
+            { word: "bad", ipa: "/bæd/", definition: "Of low quality", example: "The weather is bad today." },
+            { word: "easy", ipa: "/ˈiːzi/", definition: "Not difficult", example: "This game is easy." },
+            { word: "hard", ipa: "/hɑːrd/", definition: "Difficult", example: "The test was hard." },
+            { word: "early", ipa: "/ˈɜːrli/", definition: "Before the usual time", example: "I woke up early today." },
+            { word: "late", ipa: "/leɪt/", definition: "After the usual time", example: "He arrived late." },
+            { word: "long", ipa: "/lɒŋ/", definition: "Extended in length", example: "The movie was long." },
+            { word: "short", ipa: "/ʃɔːrt/", definition: "Not long", example: "I need a short break." },
+            { word: "hot", ipa: "/hɒt/", definition: "High in temperature", example: "The soup is hot." },
+            { word: "cold", ipa: "/koʊld/", definition: "Low in temperature", example: "It’s cold outside." },
+            { word: "dry", ipa: "/draɪ/", definition: "Without water", example: "The clothes are dry now." },
+            { word: "wet", ipa: "/wɛt/", definition: "With water", example: "My shoes are wet." },
+            { word: "clean", ipa: "/kliːn/", definition: "Free of dirt", example: "The room is clean." },
+            { word: "dirty", ipa: "/ˈdɜːrti/", definition: "Not clean", example: "The floor is dirty." }
         ];
 
         let currentWordIndex = 0;
@@ -212,8 +288,6 @@
             document.getElementById('ipa').textContent = word.ipa;
             document.getElementById('definition').textContent = '';
             document.getElementById('example').textContent = '';
-            document.getElementById('audio-source').src = word.audio;
-            document.getElementById('pronunciation').load();
             updateLearnedList();
         }
 
@@ -278,6 +352,16 @@
         function updateQuizResults() {
             const results = document.getElementById('quiz-results');
             results.innerHTML = quizResults.length ? quizResults.map(r => `<p>${r.date}: ${r.word} - ${r.correct ? 'Correct' : 'Incorrect'}</p>`).join('') : '<p>No quiz results yet.</p>';
+        }
+
+        // Reiniciar la app
+        function resetApp() {
+            if (confirm('¿Estás seguro? Esto reiniciará todo.')) {
+                if (confirm('¿Confirmas reiniciar la app?')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
         }
 
         // Inicializar
