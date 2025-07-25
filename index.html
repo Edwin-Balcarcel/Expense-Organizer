@@ -21,7 +21,7 @@
             max-width: 750px;
             width: 100%;
             background: rgba(44, 44, 44, 0.9);
-            padding: 30px;
+            padding: 40px 30px 30px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 0, 0, 0.7);
             text-align: center;
@@ -32,6 +32,20 @@
         @keyframes glow {
             from { box-shadow: 0 0 10px #00ffff; }
             to { box-shadow: 0 0 20px #00ffff, 0 0 30px #ff00ff; }
+        }
+        .intro {
+            background: rgba(0, 170, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #00ffff;
+            text-shadow: 0 0 5px #00d4ff;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
         h1 {
             font-size: 32px;
@@ -88,7 +102,7 @@
             margin: 8px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-color: #00aaff; /* Celeste original */
             color: white;
             font-size: 16px;
             cursor: pointer;
@@ -97,7 +111,7 @@
         }
         button:hover {
             transform: scale(1.05);
-            background: linear-gradient(45deg, #00b3d9, #cc00cc);
+            background-color: #0088cc; /* Oscurece al hover */
         }
         .reset-button {
             position: absolute;
@@ -121,9 +135,18 @@
             overflow-y: auto;
             font-size: 16px;
             border: 1px solid #00ffff;
+            transition: max-height 0.5s ease;
         }
         .hidden {
             display: none;
+        }
+        .warning {
+            color: #ff4040;
+            text-shadow: 0 0 10px #ff4040;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0.5; }
         }
         @media (max-width: 600px) {
             .container {
@@ -149,6 +172,9 @@
 </head>
 <body>
     <div class="container">
+        <div class="intro">
+            <p><strong>⚡ BETA ALERT ⚡</strong> - Esta es la versión beta de Flashcards. Usamos el <strong>International Phonetic Alphabet (IPA)</strong> para una pronunciación precisa. ¡Estamos trabajando en audio y expandiendo el diccionario a medida que progresas! Prepárate para aprender!</p>
+        </div>
         <h1>Flashcards</h1>
         <div class="progress">
             <div class="progress-bar" id="progress-bar"></div>
@@ -166,7 +192,8 @@
         </div>
         <div class="section">
             <h2>Palabras Aprendidas</h2>
-            <div id="learned-list" class="learned-list"></div>
+            <button onclick="toggleLearnedList()">Show Learned Words</button>
+            <div id="learned-list" class="learned-list hidden"></div>
         </div>
         <div class="section">
             <h2>Evaluación de Aprendizaje</h2>
@@ -356,7 +383,6 @@
             document.getElementById('example').textContent = word.example;
             document.getElementById('notes').value = wordNotes[word.word] || '';
             updateProgress();
-            updateLearnedList();
         }
 
         // Marcar como aprendida
@@ -368,7 +394,6 @@
                 wordNotes[word] = document.getElementById('notes').value;
                 localStorage.setItem('wordNotes', JSON.stringify(wordNotes));
                 updateProgress();
-                updateLearnedList();
             }
             nextWord();
         }
@@ -394,10 +419,10 @@
             progressBar.style.width = `${(learnedCount / 170) * 100}%`;
         }
 
-        // Actualizar lista de palabras aprendidas
-        function updateLearnedList() {
+        // Mostrar/Ocultar lista de palabras aprendidas
+        function toggleLearnedList() {
             const list = document.getElementById('learned-list');
-            list.innerHTML = learnedWords.length ? learnedWords.map(w => `<p>${w}</p>`).join('') : '<p>No words learned yet.</p>';
+            list.classList.toggle('hidden');
         }
 
         // Iniciar cuestionario
@@ -415,8 +440,17 @@
             const answer = document.getElementById('quiz-answer').value.trim().toLowerCase();
             const correctDefinition = words[currentWordIndex].definition.toLowerCase();
             const isCorrect = answer.includes(correctDefinition.split(' ')[1]);
-            const feedback = isCorrect ? 'Correct!' : `Incorrect. The definition is: ${correctDefinition}`;
-            document.getElementById('quiz-feedback').textContent = feedback;
+            const feedback = document.getElementById('quiz-feedback');
+            if (isCorrect) {
+                feedback.textContent = 'Correct!';
+                feedback.style.color = '#00ff00';
+                feedback.style.textShadow = '0 0 10px #00ff00';
+                setTimeout(startQuiz, 2000); // 2 segundos si acierta
+            } else {
+                feedback.textContent = 'Incorrect! The definition is: ' + correctDefinition;
+                feedback.classList.add('warning');
+                setTimeout(startQuiz, 7000); // 7 segundos si falla
+            }
             const quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
             quizResults.push({
                 word: words[currentWordIndex].word,
@@ -425,7 +459,6 @@
             });
             localStorage.setItem('quizResults', JSON.stringify(quizResults));
             updateQuizResults();
-            setTimeout(startQuiz, 2000);
         }
 
         // Actualizar resultados del cuestionario
@@ -454,6 +487,7 @@
 
         // Inicializar
         showFlashcard();
+        updateProgress();
         updateQuizResults();
     </script>
 </body>
