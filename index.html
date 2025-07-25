@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOEFL Flashcards</title>
+    <title>Flashcards</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -88,7 +88,7 @@
             margin: 8px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            background: #ff00ff;
             color: white;
             font-size: 16px;
             cursor: pointer;
@@ -149,12 +149,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>TOEFL Flashcards</h1>
+        <h1>Flashcards</h1>
         <div class="progress">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         <p id="progress-text">Palabras aprendidas: 0/170</p>
-        <button class="reset-button" onclick="resetApp()">Reset App</button>
+        <button class="reset-button" onclick="resetApp()">Reset</button>
         <div id="flashcard" class="flashcard">
             <p><strong>Word:</strong> <span id="word"></span> (<span id="ipa"></span>)</p>
             <p><strong>Definition:</strong> <span id="definition"></span></p>
