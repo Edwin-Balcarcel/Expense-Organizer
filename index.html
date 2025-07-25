@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #1a1a1a;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #e0e0e0;
             margin: 0;
             padding: 20px;
@@ -15,59 +15,112 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         .container {
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
-            background: #2c2c2c;
+            background: rgba(44, 44, 44, 0.9);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 0, 0, 0.7);
             text-align: center;
+            position: relative;
+            border: 2px solid #00ffff;
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #00ffff; }
+            to { box-shadow: 0 0 20px #00ffff, 0 0 30px #ff00ff; }
         }
         h1 {
-            font-size: 28px;
-            color: #00aaff;
+            font-size: 32px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #00d4ff;
+        }
+        .progress {
+            width: 100%;
+            background: #333;
+            border-radius: 10px;
             margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+        .progress-bar {
+            height: 15px;
+            background: linear-gradient(90deg, #00d4ff, #ff00ff);
+            width: 0;
+            transition: width 0.5s ease;
+            border-radius: 10px;
         }
         .flashcard {
-            background: #3a3a3a;
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(58, 58, 58, 0.9);
+            padding: 25px;
+            border-radius: 12px;
             margin: 20px 0;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #00ffff;
         }
         .flashcard:hover {
             transform: translateY(-5px);
+            box-shadow: 0 0 15px #00ffff;
         }
         .flashcard p {
             margin: 10px 0;
             font-size: 18px;
+            color: #e0e0e0;
+        }
+        .notes {
+            width: 100%;
+            height: 60px;
+            margin-top: 10px;
+            padding: 8px;
+            background: #2a2a2a;
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: #e0e0e0;
+            resize: none;
+            font-size: 14px;
         }
         button {
             padding: 12px 24px;
             margin: 8px;
             border: none;
             border-radius: 8px;
-            background-color: #00aaff;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
             color: white;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: transform 0.3s ease, background 0.3s ease;
+            border: 1px solid #00ffff;
         }
         button:hover {
-            background-color: #0088cc;
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #00b3d9, #cc00cc);
+        }
+        .reset-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff4040;
+            padding: 10px 20px;
+            border: 1px solid #ff4040;
+        }
+        .reset-button:hover {
+            background: #cc3333;
         }
         .section {
             margin-top: 30px;
         }
         .learned-list, .quiz-results {
-            background: #3a3a3a;
+            background: rgba(58, 58, 58, 0.9);
             padding: 15px;
             border-radius: 10px;
             max-height: 250px;
             overflow-y: auto;
             font-size: 16px;
+            border: 1px solid #00ffff;
         }
         .hidden {
             display: none;
@@ -83,19 +136,33 @@
                 padding: 10px 20px;
                 font-size: 14px;
             }
+            .reset-button {
+                top: 15px;
+                right: 15px;
+                padding: 8px 16px;
+            }
+            .notes {
+                height: 50px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="section">
+    <div class="container">
         <h1>TOEFL Flashcards</h1>
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p id="progress-text">Palabras aprendidas: 0/170</p>
+        <button class="reset-button" onclick="resetApp()">Reset App</button>
         <div id="flashcard" class="flashcard">
             <p><strong>Word:</strong> <span id="word"></span> (<span id="ipa"></span>)</p>
             <p><strong>Definition:</strong> <span id="definition"></span></p>
             <p><strong>Example:</strong> <span id="example"></span></p>
-            <button onclick="showAnswer()">Show Answer</button>
+            <textarea id="notes" class="notes" placeholder="Add your notes here..."></textarea>
             <button onclick="markLearned()">Mark as Learned</button>
             <button onclick="nextWord()">Next Word</button>
+            <button onclick="randomWord()">Random Word</button>
         </div>
         <div class="section">
             <h2>Palabras Aprendidas</h2>
@@ -104,7 +171,6 @@
         <div class="section">
             <h2>Evaluación de Aprendizaje</h2>
             <button onclick="startQuiz()">Start Quiz</button>
-            <button onclick="resetApp()">Reset App</button>
             <div id="quiz" class="hidden">
                 <p><strong>Question:</strong> What is the meaning of "<span id="quiz-word"></span>"?</p>
                 <input type="text" id="quiz-answer" placeholder="Type your answer">
@@ -279,23 +345,18 @@
 
         let currentWordIndex = 0;
         let learnedWords = JSON.parse(localStorage.getItem('learnedWords')) || [];
-        let quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
+        let wordNotes = JSON.parse(localStorage.getItem('wordNotes')) || {};
 
         // Mostrar flashcard
         function showFlashcard() {
             const word = words[currentWordIndex];
             document.getElementById('word').textContent = word.word;
             document.getElementById('ipa').textContent = word.ipa;
-            document.getElementById('definition').textContent = '';
-            document.getElementById('example').textContent = '';
-            updateLearnedList();
-        }
-
-        // Mostrar respuesta
-        function showAnswer() {
-            const word = words[currentWordIndex];
             document.getElementById('definition').textContent = word.definition;
             document.getElementById('example').textContent = word.example;
+            document.getElementById('notes').value = wordNotes[word.word] || '';
+            updateProgress();
+            updateLearnedList();
         }
 
         // Marcar como aprendida
@@ -304,6 +365,9 @@
             if (!learnedWords.includes(word)) {
                 learnedWords.push(word);
                 localStorage.setItem('learnedWords', JSON.stringify(learnedWords));
+                wordNotes[word] = document.getElementById('notes').value;
+                localStorage.setItem('wordNotes', JSON.stringify(wordNotes));
+                updateProgress();
                 updateLearnedList();
             }
             nextWord();
@@ -313,6 +377,21 @@
         function nextWord() {
             currentWordIndex = (currentWordIndex + 1) % words.length;
             showFlashcard();
+        }
+
+        // Palabra aleatoria
+        function randomWord() {
+            currentWordIndex = Math.floor(Math.random() * words.length);
+            showFlashcard();
+        }
+
+        // Actualizar progreso
+        function updateProgress() {
+            const learnedCount = learnedWords.length;
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
+            progressText.textContent = `Palabras aprendidas: ${learnedCount}/170`;
+            progressBar.style.width = `${(learnedCount / 170) * 100}%`;
         }
 
         // Actualizar lista de palabras aprendidas
@@ -338,6 +417,7 @@
             const isCorrect = answer.includes(correctDefinition.split(' ')[1]);
             const feedback = isCorrect ? 'Correct!' : `Incorrect. The definition is: ${correctDefinition}`;
             document.getElementById('quiz-feedback').textContent = feedback;
+            const quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
             quizResults.push({
                 word: words[currentWordIndex].word,
                 correct: isCorrect,
@@ -351,6 +431,7 @@
         // Actualizar resultados del cuestionario
         function updateQuizResults() {
             const results = document.getElementById('quiz-results');
+            const quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
             results.innerHTML = quizResults.length ? quizResults.map(r => `<p>${r.date}: ${r.word} - ${r.correct ? 'Correct' : 'Incorrect'}</p>`).join('') : '<p>No quiz results yet.</p>';
         }
 
@@ -363,6 +444,13 @@
                 }
             }
         }
+
+        // Guardar notas al cambiar
+        document.getElementById('notes').addEventListener('input', function() {
+            const word = words[currentWordIndex].word;
+            wordNotes[word] = this.value;
+            localStorage.setItem('wordNotes', JSON.stringify(wordNotes));
+        });
 
         // Inicializar
         showFlashcard();
