@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcards</title>
+    <title>TOEFL Flashcards</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -191,4 +191,98 @@
             { word: "substantial", ipa: "/səbˈstænʃəl/", definition: "Large or significant", example: "The app received substantial funding.", audio: "https://howtopronounce.com/audio/substantial.mp3" },
             { word: "synthesis", ipa: "/ˈsɪnθəsɪs/", definition: "Combining parts into a whole", example: "The song is a synthesis of genres.", audio: "https://howtopronounce.com/audio/synthesis.mp3" },
             { word: "transient", ipa: "/ˈtrænziənt/", definition: "Temporary or passing", example: "Trends in music are often transient.", audio: "https://howtopronounce.com/audio/transient.mp3" },
-            { word: "viable", ipa: "/ˈvaɪəbə }
+            { word: "viable", ipa: "/ˈvaɪəbəl/", definition: "Capable of working successfully", example: "The startup has a viable business model.", audio: "https://howtopronounce.com/audio/viable.mp3" },
+            { word: "advocate", ipa: "/ˈædvəˌkeɪt/", definition: "To support or recommend", example: "He advocates for open-source software.", audio: "https://howtopronounce.com/audio/advocate.mp3" },
+            { word: "coherent", ipa: "/koʊˈhɪrənt/", definition: "Logical and consistent", example: "Her essay was coherent and well-written.", audio: "https://howtopronounce.com/audio/coherent.mp3" },
+            { word: "compelling", ipa: "/kəmˈpelɪŋ/", definition: "Captivating or convincing", example: "The music video was compelling.", audio: "https://howtopronounce.com/audio/compelling.mp3" },
+            { word: "detrimental", ipa: "/ˌdetrɪˈmentəl/", definition: "Harmful or damaging", example: "Bugs can be detrimental to an app.", audio: "https://howtopronounce.com/audio/detrimental.mp3" },
+            { word: "exacerbate", ipa: "/ɪɡˈzæsərˌbeɪt/", definition: "To make worse", example: "Ignoring the issue will exacerbate it.", audio: "https://howtopronounce.com/audio/exacerbate.mp3" },
+            { word: "facilitate", ipa: "/fəˈsɪlɪˌteɪt/", definition: "To make easier", example: "Apps facilitate music sharing.", audio: "https://howtopronounce.com/audio/facilitate.mp3" },
+            { word: "scrutinize", ipa: "/ˈskruːtəˌnaɪz/", definition: "To examine closely", example: "We scrutinized the code for errors.", audio: "https://howtopronounce.com/audio/scrutinize.mp3" }
+        ];
+
+        let currentWordIndex = 0;
+        let learnedWords = JSON.parse(localStorage.getItem('learnedWords')) || [];
+        let quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
+
+        // Mostrar flashcard
+        function showFlashcard() {
+            const word = words[currentWordIndex];
+            document.getElementById('word').textContent = word.word;
+            document.getElementById('ipa').textContent = word.ipa;
+            document.getElementById('definition').textContent = '';
+            document.getElementById('example').textContent = '';
+            document.getElementById('audio-source').src = word.audio;
+            document.getElementById('pronunciation').load();
+            updateLearnedList();
+        }
+
+        // Mostrar respuesta
+        function showAnswer() {
+            const word = words[currentWordIndex];
+            document.getElementById('definition').textContent = word.definition;
+            document.getElementById('example').textContent = word.example;
+        }
+
+        // Marcar como aprendida
+        function markLearned() {
+            const word = words[currentWordIndex].word;
+            if (!learnedWords.includes(word)) {
+                learnedWords.push(word);
+                localStorage.setItem('learnedWords', JSON.stringify(learnedWords));
+                updateLearnedList();
+            }
+            nextWord();
+        }
+
+        // Siguiente palabra
+        function nextWord() {
+            currentWordIndex = (currentWordIndex + 1) % words.length;
+            showFlashcard();
+        }
+
+        // Actualizar lista de palabras aprendidas
+        function updateLearnedList() {
+            const list = document.getElementById('learned-list');
+            list.innerHTML = learnedWords.length ? learnedWords.map(w => `<p>${w}</p>`).join('') : '<p>No words learned yet.</p>';
+        }
+
+        // Iniciar cuestionario
+        function startQuiz() {
+            document.getElementById('quiz').classList.remove('hidden');
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentWordIndex = randomIndex;
+            document.getElementById('quiz-word').textContent = words[randomIndex].word;
+            document.getElementById('quiz-answer').value = '';
+            document.getElementById('quiz-feedback').textContent = '';
+        }
+
+        // Enviar respuesta del cuestionario
+        function submitAnswer() {
+            const answer = document.getElementById('quiz-answer').value.trim().toLowerCase();
+            const correctDefinition = words[currentWordIndex].definition.toLowerCase();
+            const isCorrect = answer.includes(correctDefinition.split(' ')[1]);
+            const feedback = isCorrect ? 'Correct!' : `Incorrect. The definition is: ${correctDefinition}`;
+            document.getElementById('quiz-feedback').textContent = feedback;
+            quizResults.push({
+                word: words[currentWordIndex].word,
+                correct: isCorrect,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('quizResults', JSON.stringify(quizResults));
+            updateQuizResults();
+            setTimeout(startQuiz, 2000);
+        }
+
+        // Actualizar resultados del cuestionario
+        function updateQuizResults() {
+            const results = document.getElementById('quiz-results');
+            results.innerHTML = quizResults.length ? quizResults.map(r => `<p>${r.date}: ${r.word} - ${r.correct ? 'Correct' : 'Incorrect'}</p>`).join('') : '<p>No quiz results yet.</p>';
+        }
+
+        // Inicializar
+        showFlashcard();
+        updateQuizResults();
+    </script>
+</body>
+</html>
